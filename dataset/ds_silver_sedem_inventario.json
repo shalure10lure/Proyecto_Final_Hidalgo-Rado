@@ -1,0 +1,66 @@
+{
+	"name": "ds_silver_sedem_inventario",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_subsidios",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "silver/sedem"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "inventario_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "empresa_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "producto_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "nro_lote",
+				"type": "varchar"
+			},
+			{
+				"name": "cantidad_producida",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "cantidad_despachada",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "cantidad_disponible",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "estado",
+				"type": "varchar"
+			},
+			{
+				"name": "fecha_ultimo_movimiento",
+				"type": "date"
+			},
+			{
+				"name": "almacen",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "silver",
+			"table": "sedem_inventario"
+		}
+	}
+}

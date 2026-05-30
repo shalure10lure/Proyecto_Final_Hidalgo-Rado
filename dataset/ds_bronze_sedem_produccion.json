@@ -1,0 +1,80 @@
+{
+	"name": "ds_bronze_sedem_produccion",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "data_lake_subsidios",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "origenbronze/sedem"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "sedem_produccion.csv",
+				"folderPath": "sedem",
+				"fileSystem": "bronze"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "produccion_id",
+				"type": "String"
+			},
+			{
+				"name": "empresa_id",
+				"type": "String"
+			},
+			{
+				"name": "planta_id",
+				"type": "String"
+			},
+			{
+				"name": "producto_id",
+				"type": "String"
+			},
+			{
+				"name": "nro_lote",
+				"type": "String"
+			},
+			{
+				"name": "fecha_produccion",
+				"type": "String"
+			},
+			{
+				"name": "cantidad",
+				"type": "String"
+			},
+			{
+				"name": "unidad",
+				"type": "String"
+			},
+			{
+				"name": "turno",
+				"type": "String"
+			},
+			{
+				"name": "responsable",
+				"type": "String"
+			},
+			{
+				"name": "costo_produccion",
+				"type": "String"
+			},
+			{
+				"name": "estado",
+				"type": "String"
+			},
+			{
+				"name": "fecha_vencimiento",
+				"type": "String"
+			}
+		]
+	}
+}

@@ -1,0 +1,60 @@
+{
+	"name": "ds_bronze_dw_sedem_inventario",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_subsidios",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "bronze/sedem"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "inventario_id",
+				"type": "nvarchar"
+			},
+			{
+				"name": "empresa_id",
+				"type": "nvarchar"
+			},
+			{
+				"name": "producto_id",
+				"type": "nvarchar"
+			},
+			{
+				"name": "nro_lote",
+				"type": "nvarchar"
+			},
+			{
+				"name": "cantidad_producida",
+				"type": "nvarchar"
+			},
+			{
+				"name": "cantidad_despachada",
+				"type": "nvarchar"
+			},
+			{
+				"name": "cantidad_disponible",
+				"type": "nvarchar"
+			},
+			{
+				"name": "estado",
+				"type": "nvarchar"
+			},
+			{
+				"name": "fecha_ultimo_movimiento",
+				"type": "nvarchar"
+			},
+			{
+				"name": "almacen",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "bronze",
+			"table": "sedem_inventario"
+		}
+	}
+}

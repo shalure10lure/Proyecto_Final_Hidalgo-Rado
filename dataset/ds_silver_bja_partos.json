@@ -1,0 +1,58 @@
+{
+	"name": "ds_silver_bja_partos",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_subsidios",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "silver/bja"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "parto_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "ci_madre",
+				"type": "varchar"
+			},
+			{
+				"name": "ci_recien_nacido",
+				"type": "varchar"
+			},
+			{
+				"name": "establecimiento_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "fecha_parto",
+				"type": "date"
+			},
+			{
+				"name": "tipo_parto",
+				"type": "varchar"
+			},
+			{
+				"name": "peso_nacimiento_kg",
+				"type": "decimal",
+				"precision": 4,
+				"scale": 2
+			},
+			{
+				"name": "talla_nacimiento_cm",
+				"type": "decimal",
+				"precision": 4,
+				"scale": 1
+			}
+		],
+		"typeProperties": {
+			"schema": "silver",
+			"table": "bja_partos"
+		}
+	}
+}

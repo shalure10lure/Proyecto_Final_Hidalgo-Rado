@@ -1,0 +1,48 @@
+{
+	"name": "ds_bronze_dw_agenciasedem_vehiculos",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_subsidios",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "bronze/agenciasedem"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "vehiculo_id",
+				"type": "nvarchar"
+			},
+			{
+				"name": "transportista_id",
+				"type": "nvarchar"
+			},
+			{
+				"name": "descripcion",
+				"type": "nvarchar"
+			},
+			{
+				"name": "placa",
+				"type": "nvarchar"
+			},
+			{
+				"name": "tipo",
+				"type": "nvarchar"
+			},
+			{
+				"name": "capacidad_kg",
+				"type": "nvarchar"
+			},
+			{
+				"name": "estado",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "bronze",
+			"table": "agenciasedem_vehiculos"
+		}
+	}
+}

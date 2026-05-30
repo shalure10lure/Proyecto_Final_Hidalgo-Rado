@@ -1,0 +1,96 @@
+{
+	"name": "df_silver_bja_controles_prenatales",
+	"properties": {
+		"folder": {
+			"name": "silver/bja"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_bronze_dw_bja_controles_prenatales",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_silver_bja_controles_prenatales",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "derivedColumn2"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          control_prenatal_id as string,",
+				"          ci_beneficiaria as string,",
+				"          establecimiento_id as string,",
+				"          nro_control as string,",
+				"          fecha_control as string,",
+				"          semana_gestacion as string,",
+				"          peso_madre_kg as string,",
+				"          presion_arterial as string,",
+				"          resultado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\n    TRIM(CAST(control_prenatal_id AS NVARCHAR)) AS control_prenatal_id,\\n    TRIM(ci_beneficiaria)                        AS ci_beneficiaria,\\n    TRIM(CAST(establecimiento_id AS NVARCHAR))  AS establecimiento_id,\\n    TRIM(CAST(nro_control AS NVARCHAR))         AS nro_control,\\n    TRIM(fecha_control)                         AS fecha_control,\\n    TRIM(CAST(semana_gestacion AS NVARCHAR))    AS semana_gestacion,\\n    TRIM(CAST(peso_madre_kg AS NVARCHAR))       AS peso_madre_kg,\\n    TRIM(presion_arterial)                      AS presion_arterial,\\n    TRIM(resultado)                             AS resultado\\nFROM bronze.bja_controles_prenatales',",
+				"     format: 'query') ~> source1",
+				"source1 derive(control_prenatal_id = iif(isNull(control_prenatal_id) || trim(control_prenatal_id) == '' || isError(toInteger(trim(control_prenatal_id))), -1, toInteger(trim(control_prenatal_id))),",
+				"          establecimiento_id = iif(isNull(establecimiento_id) || trim(establecimiento_id) == '' || isError(toInteger(trim(establecimiento_id))), -1, toInteger(trim(establecimiento_id))),",
+				"          nro_control = iif(isNull(nro_control) || trim(nro_control) == '' || isError(toInteger(trim(nro_control))), -1, toInteger(trim(nro_control))),",
+				"          semana_gestacion = iif(isNull(semana_gestacion) || trim(semana_gestacion) == '' || upper(trim(semana_gestacion)) == 'NULL', toInteger(toString(null())), toInteger(regexReplace(trim(semana_gestacion), '[^0-9]', ''))),",
+				"          ci_beneficiaria = iif(isNull(ci_beneficiaria) || trim(ci_beneficiaria) == '', '000000', regexReplace(upper(trim(ci_beneficiaria)), '[^0-9]', ''))) ~> derivedColumn1",
+				"derivedColumn1 derive(fecha_control = iif(isNull(fecha_control) || trim(fecha_control) == '' || upper(trim(fecha_control)) == 'NULL' || upper(trim(fecha_control)) == 'N/D', toDate('1900-01-01'), coalesce(toDate(trim(fecha_control), 'yyyy-MM-dd'), toDate(trim(fecha_control), 'dd/MM/yyyy'), toDate(trim(fecha_control), 'MM/dd/yyyy'), toDate(trim(fecha_control), 'dd-MM-yyyy'), toDate(trim(fecha_control), 'yyyyMMdd'))),",
+				"          peso_madre_kg = iif(isNull(peso_madre_kg) || trim(peso_madre_kg) == '' || toDecimal(regexReplace(replace(trim(peso_madre_kg),',','.'), '[^0-9.]',''), 5, 2) < 20.00 || toDecimal(regexReplace(replace(trim(peso_madre_kg),',','.'), '[^0-9.]',''), 5, 2) > 300.00, toDecimal(toString(null()), 5, 2), toDecimal(regexReplace(replace(trim(peso_madre_kg),',','.'), '[^0-9.]',''), 5, 2)),",
+				"          presion_arterial = iif(isNull(presion_arterial) || trim(presion_arterial) == '' || upper(trim(presion_arterial)) == 'NULL', toString(null()), regexReplace(trim(presion_arterial), '\\\\s+', ' ')),",
+				"          resultado = iif(upper(trim(resultado)) == 'NORMAL', 'NORMAL', iif(upper(trim(resultado)) == 'RIESGO' || upper(trim(resultado)) == 'ALTO RIESGO', 'RIESGO', iif(isNull(resultado) || trim(resultado) == '', toString(null()), upper(trim(resultado)))))) ~> derivedColumn2",
+				"derivedColumn2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          control_prenatal_id as integer,",
+				"          ci_beneficiaria as string,",
+				"          establecimiento_id as integer,",
+				"          nro_control as integer,",
+				"          fecha_control as date,",
+				"          semana_gestacion as integer,",
+				"          peso_madre_kg as decimal(5,2),",
+				"          presion_arterial as string,",
+				"          resultado as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          control_prenatal_id,",
+				"          ci_beneficiaria,",
+				"          establecimiento_id,",
+				"          nro_control,",
+				"          fecha_control,",
+				"          semana_gestacion,",
+				"          peso_madre_kg,",
+				"          presion_arterial,",
+				"          resultado",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

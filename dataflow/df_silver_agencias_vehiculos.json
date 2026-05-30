@@ -1,0 +1,85 @@
+{
+	"name": "df_silver_agencias_vehiculos",
+	"properties": {
+		"folder": {
+			"name": "silver/agenciasedem"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_bronze_dw_agenciasedem_vehiculos",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_silver_agenciasedem_vehiculos",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          vehiculo_id as string,",
+				"          transportista_id as string,",
+				"          descripcion as string,",
+				"          placa as string,",
+				"          tipo as string,",
+				"          capacidad_kg as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\n    TRIM(CAST(vehiculo_id AS NVARCHAR))      AS vehiculo_id,\\n    TRIM(CAST(transportista_id AS NVARCHAR)) AS transportista_id,\\n    TRIM(descripcion)                        AS descripcion,\\n    TRIM(placa)                              AS placa,\\n    TRIM(tipo)                               AS tipo,\\n    TRIM(CAST(capacidad_kg AS NVARCHAR))     AS capacidad_kg,\\n    TRIM(estado)                             AS estado\\nFROM bronze.agenciasedem_vehiculos',",
+				"     format: 'query') ~> source1",
+				"source1 derive(vehiculo_id = iif(isNull(vehiculo_id) || trim(replace(vehiculo_id, '\"', '')) == '' || isError(toInteger(trim(replace(vehiculo_id, '\"', '')))), -1, toInteger(trim(replace(vehiculo_id, '\"', '')))),",
+				"          transportista_id = iif(isNull(transportista_id) || trim(replace(transportista_id, '\"', '')) == '' || isError(toInteger(trim(replace(transportista_id, '\"', '')))), -1, toInteger(trim(replace(transportista_id, '\"', '')))),",
+				"          descripcion = iif(isNull(descripcion) || trim(replace(descripcion, '\"', '')) == '', toString(null()), initCap(trim(replace(replace(replace(descripcion, 'CamiÃ³n', 'Camion'), 'FurgÃ³n', 'Furgon'), '\"', '')))),",
+				"          tipo = iif(isNull(tipo) || trim(replace(tipo, '\"', '')) == '', toString(null()), initCap(trim(replace(tipo, '\"', '')))),",
+				"          placa = iif(isNull(placa) || trim(replace(placa, '\"', '')) == '' || upper(trim(replace(placa, '\"', ''))) == 'NULL', toString(null()), upper(trim(replace(placa, '\"', '')))),",
+				"          capacidad_kg = iif(isNull(capacidad_kg) || trim(replace(capacidad_kg, '\"', '')) == '' || isError(toInteger(trim(replace(capacidad_kg, '\"', '')))), 0, toInteger(trim(replace(capacidad_kg, '\"', '')))),",
+				"          estado = iif(isNull(estado) || trim(replace(estado, '\"', '')) == '', toString(null()), upper(trim(replace(estado, '\"', ''))))) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          vehiculo_id as integer,",
+				"          transportista_id as integer,",
+				"          descripcion as string,",
+				"          placa as string,",
+				"          tipo as string,",
+				"          capacidad_kg as integer,",
+				"          estado as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          vehiculo_id,",
+				"          transportista_id,",
+				"          descripcion,",
+				"          placa,",
+				"          tipo,",
+				"          capacidad_kg,",
+				"          estado",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

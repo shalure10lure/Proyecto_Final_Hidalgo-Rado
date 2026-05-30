@@ -1,0 +1,100 @@
+{
+	"name": "df_silver_bja_controles_pediatricos",
+	"properties": {
+		"folder": {
+			"name": "silver/bja"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_bronze_dw_bja_controles_pediatricos",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_silver_bja_controles_pediatricos",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "derivedColumn2"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          control_pediatrico_id as string,",
+				"          ci_nino as string,",
+				"          ci_madre as string,",
+				"          establecimiento_id as string,",
+				"          nro_control as string,",
+				"          fecha_control as string,",
+				"          peso_nino_kg as string,",
+				"          talla_nino_cm as string,",
+				"          vacuna_aplicada as string,",
+				"          resultado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\n    TRIM(CAST(control_pediatrico_id AS NVARCHAR)) AS control_pediatrico_id,\\n    TRIM(ci_nino)                                  AS ci_nino,\\n    TRIM(ci_madre)                                 AS ci_madre,\\n    TRIM(CAST(establecimiento_id AS NVARCHAR))    AS establecimiento_id,\\n    TRIM(CAST(nro_control AS NVARCHAR))           AS nro_control,\\n    TRIM(fecha_control)                           AS fecha_control,\\n    TRIM(CAST(peso_nino_kg AS NVARCHAR))          AS peso_nino_kg,\\n    TRIM(CAST(talla_nino_cm AS NVARCHAR))         AS talla_nino_cm,\\n    TRIM(vacuna_aplicada)                         AS vacuna_aplicada,\\n    TRIM(resultado)                               AS resultado\\nFROM bronze.bja_controles_pediatricos',",
+				"     format: 'query') ~> source1",
+				"source1 derive(control_pediatrico_id = iif(isNull(control_pediatrico_id) || trim(control_pediatrico_id) == '' || isError(toInteger(trim(control_pediatrico_id))), -1, toInteger(trim(control_pediatrico_id))),",
+				"          establecimiento_id = iif(isNull(establecimiento_id) || trim(establecimiento_id) == '' || isError(toInteger(trim(establecimiento_id))), -1, toInteger(trim(establecimiento_id))),",
+				"          nro_control = iif(isNull(nro_control) || trim(nro_control) == '' || isError(toInteger(trim(nro_control))), -1, toInteger(trim(nro_control))),",
+				"          ci_nino = iif(isNull(ci_nino) || trim(ci_nino) == '', '000000', regexReplace(upper(trim(ci_nino)), '[^0-9]', '')),",
+				"          ci_madre = iif(isNull(ci_madre) || trim(ci_madre) == '', '000000', regexReplace(upper(trim(ci_madre)), '[^0-9]', ''))) ~> derivedColumn1",
+				"derivedColumn1 derive(fecha_control = iif(isNull(fecha_control) || trim(fecha_control) == '' || upper(trim(fecha_control)) == 'NULL' || upper(trim(fecha_control)) == 'N/D', toDate('1900-01-01'), coalesce(toDate(trim(fecha_control), 'yyyy-MM-dd'), toDate(trim(fecha_control), 'dd/MM/yyyy'), toDate(trim(fecha_control), 'MM/dd/yyyy'), toDate(trim(fecha_control), 'dd-MM-yyyy'), toDate(trim(fecha_control), 'yyyyMMdd'))),",
+				"          peso_nino_kg = iif(isNull(peso_nino_kg) || trim(peso_nino_kg) == '' || toDecimal(regexReplace(replace(trim(peso_nino_kg),',','.'), '[^0-9.]',''), 4, 2) < 0.30 || toDecimal(regexReplace(replace(trim(peso_nino_kg),',','.'), '[^0-9.]',''), 4, 2) > 150.00, toDecimal(toString(null()), 4, 2), toDecimal(regexReplace(replace(trim(peso_nino_kg),',','.'), '[^0-9.]',''), 4, 2)),",
+				"          talla_nino_cm = iif(isNull(talla_nino_cm) || trim(talla_nino_cm) == '' || toDecimal(regexReplace(replace(trim(talla_nino_cm),',','.'), '[^0-9.]',''), 4, 1) < 30.0 || toDecimal(regexReplace(replace(trim(talla_nino_cm),',','.'), '[^0-9.]',''), 4, 1) > 200.0, toDecimal(toString(null()), 4, 1), toDecimal(regexReplace(replace(trim(talla_nino_cm),',','.'), '[^0-9.]',''), 4, 1)),",
+				"          vacuna_aplicada = iif(isNull(vacuna_aplicada) || trim(vacuna_aplicada) == '', toString(null()), initCap(trim(regexReplace(regexReplace(upper(trim(vacuna_aplicada)), '\\\\s+', ' '), 'DOISS|DOISS|DOIS$', 'DOSIS')))),",
+				"          resultado = case(     in(['NORMAL','NORML','NRMAL','NOMRAL','NROMAL','NORRMAL'], upper(trim(resultado))), 'Normal',     in(['BAJO PESO','BJAO PESO','BAJO ESO'], upper(trim(resultado))), 'Bajo Peso',     rlike(upper(trim(resultado)), 'DESNUTRICI.*LEVE'), 'Desnutrición Leve',     isNull(resultado) || trim(resultado) == '', toString(null()),     initCap(trim(resultado)) )) ~> derivedColumn2",
+				"derivedColumn2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          control_pediatrico_id as integer,",
+				"          ci_nino as string,",
+				"          ci_madre as string,",
+				"          establecimiento_id as integer,",
+				"          nro_control as integer,",
+				"          fecha_control as date,",
+				"          peso_nino_kg as decimal(4,2),",
+				"          talla_nino_cm as decimal(4,1),",
+				"          vacuna_aplicada as string,",
+				"          resultado as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          control_pediatrico_id,",
+				"          ci_nino,",
+				"          ci_madre,",
+				"          establecimiento_id,",
+				"          nro_control,",
+				"          fecha_control,",
+				"          peso_nino_kg,",
+				"          talla_nino_cm,",
+				"          vacuna_aplicada,",
+				"          resultado",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

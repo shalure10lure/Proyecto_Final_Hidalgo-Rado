@@ -1,0 +1,52 @@
+{
+	"name": "ds_bronze_dw_bja_pagos",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_subsidios",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "bronze/bja"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "pago_id",
+				"type": "nvarchar"
+			},
+			{
+				"name": "ci_beneficiaria",
+				"type": "nvarchar"
+			},
+			{
+				"name": "concepto_pago",
+				"type": "nvarchar"
+			},
+			{
+				"name": "monto_bs",
+				"type": "nvarchar"
+			},
+			{
+				"name": "fecha_pago",
+				"type": "nvarchar"
+			},
+			{
+				"name": "estado_pago",
+				"type": "nvarchar"
+			},
+			{
+				"name": "canal_pago",
+				"type": "nvarchar"
+			},
+			{
+				"name": "nro_comprobante",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "bronze",
+			"table": "bja_pagos"
+		}
+	}
+}

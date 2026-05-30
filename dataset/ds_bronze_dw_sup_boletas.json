@@ -1,0 +1,44 @@
+{
+	"name": "ds_bronze_dw_sup_boletas",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_subsidios",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "bronze/sup"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "boleta_id",
+				"type": "nvarchar"
+			},
+			{
+				"name": "control_id",
+				"type": "nvarchar"
+			},
+			{
+				"name": "ci_beneficiaria",
+				"type": "nvarchar"
+			},
+			{
+				"name": "nro_boleta",
+				"type": "nvarchar"
+			},
+			{
+				"name": "fecha_emision",
+				"type": "nvarchar"
+			},
+			{
+				"name": "estado",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "bronze",
+			"table": "sup_boletas"
+		}
+	}
+}

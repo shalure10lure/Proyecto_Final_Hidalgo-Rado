@@ -1,0 +1,79 @@
+{
+	"name": "ds_silver_sedem_produccion",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_subsidios",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "silver/sedem"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "produccion_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "empresa_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "planta_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "producto_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "nro_lote",
+				"type": "varchar"
+			},
+			{
+				"name": "fecha_produccion",
+				"type": "date"
+			},
+			{
+				"name": "cantidad",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "unidad",
+				"type": "varchar"
+			},
+			{
+				"name": "turno",
+				"type": "varchar"
+			},
+			{
+				"name": "responsable",
+				"type": "nvarchar"
+			},
+			{
+				"name": "costo_produccion",
+				"type": "decimal",
+				"precision": 12,
+				"scale": 2
+			},
+			{
+				"name": "estado",
+				"type": "varchar"
+			},
+			{
+				"name": "fecha_vencimiento",
+				"type": "date"
+			}
+		],
+		"typeProperties": {
+			"schema": "silver",
+			"table": "sedem_produccion"
+		}
+	}
+}

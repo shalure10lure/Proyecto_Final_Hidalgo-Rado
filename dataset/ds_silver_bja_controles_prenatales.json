@@ -1,0 +1,62 @@
+{
+	"name": "ds_silver_bja_controles_prenatales",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_subsidios",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "silver/bja"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "control_prenatal_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "ci_beneficiaria",
+				"type": "varchar"
+			},
+			{
+				"name": "establecimiento_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "nro_control",
+				"type": "tinyint",
+				"precision": 3
+			},
+			{
+				"name": "fecha_control",
+				"type": "date"
+			},
+			{
+				"name": "semana_gestacion",
+				"type": "tinyint",
+				"precision": 3
+			},
+			{
+				"name": "peso_madre_kg",
+				"type": "decimal",
+				"precision": 5,
+				"scale": 2
+			},
+			{
+				"name": "presion_arterial",
+				"type": "varchar"
+			},
+			{
+				"name": "resultado",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "silver",
+			"table": "bja_controles_prenatales"
+		}
+	}
+}

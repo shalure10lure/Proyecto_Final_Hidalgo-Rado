@@ -1,0 +1,92 @@
+{
+	"name": "df_silver_bja_pagos",
+	"properties": {
+		"folder": {
+			"name": "silver/bja"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_bronze_dw_bja_pagos",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_silver_bja_pagos",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "derivedColumn2"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          pago_id as string,",
+				"          ci_beneficiaria as string,",
+				"          concepto_pago as string,",
+				"          monto_bs as string,",
+				"          fecha_pago as string,",
+				"          estado_pago as string,",
+				"          canal_pago as string,",
+				"          nro_comprobante as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\n    TRIM(CAST(pago_id AS NVARCHAR))    AS pago_id,\\n    TRIM(ci_beneficiaria)               AS ci_beneficiaria,\\n    TRIM(concepto_pago)                AS concepto_pago,\\n    TRIM(CAST(monto_bs AS NVARCHAR))   AS monto_bs,\\n    TRIM(fecha_pago)                   AS fecha_pago,\\n    TRIM(estado_pago)                  AS estado_pago,\\n    TRIM(canal_pago)                   AS canal_pago,\\n    TRIM(nro_comprobante)              AS nro_comprobante\\nFROM bronze.bja_pagos',",
+				"     format: 'query') ~> source1",
+				"source1 derive(pago_id = iif(isNull(pago_id) || trim(pago_id) == '' || isError(toInteger(trim(pago_id))), -1, toInteger(trim(pago_id))),",
+				"          monto_bs = iif(isNull(monto_bs) || trim(monto_bs) == '' || upper(trim(monto_bs)) == 'NULL' || upper(trim(monto_bs)) == 'N/A', toDecimal(toString(null()), 10, 2), toDecimal(iif(rlike(trim(regexReplace(regexReplace(trim(monto_bs), '^(?i)[b\\\\s\\\\.s-]*', ''), '(?i)[b\\\\s\\\\.s-]*$', '')), '^\\\\d+$'), trim(regexReplace(regexReplace(trim(monto_bs), '^(?i)[b\\\\s\\\\.s-]*', ''), '(?i)[b\\\\s\\\\.s-]*$', '')) + '.00', regexReplace(replace(trim(regexReplace(regexReplace(trim(monto_bs), '^(?i)[b\\\\s\\\\.s-]*', ''), '(?i)[b\\\\s\\\\.s-]*$', '')), ',', '.'), '\\\\.([0-9]{3})', '$1')), 10, 2)),",
+				"          ci_beneficiaria = iif(isNull(ci_beneficiaria) || trim(ci_beneficiaria) == '', '000000', regexReplace(upper(trim(ci_beneficiaria)), '[^0-9]', '')),",
+				"          concepto_pago = iif(isNull(concepto_pago) || trim(concepto_pago) == '', toString(null()), initCap(trim(concepto_pago)))) ~> derivedColumn1",
+				"derivedColumn1 derive(canal_pago = iif(isNull(canal_pago) || trim(canal_pago) == '', toString(null()), initCap(trim(canal_pago))),",
+				"          fecha_pago = iif(isNull(fecha_pago) || trim(fecha_pago) == '' || upper(trim(fecha_pago)) == 'NULL' || upper(trim(fecha_pago)) == 'N/D', toDate('1900-01-01'), coalesce(toDate(trim(fecha_pago), 'yyyy-MM-dd'), toDate(trim(fecha_pago), 'dd/MM/yyyy'), toDate(trim(fecha_pago), 'MM/dd/yyyy'), toDate(trim(fecha_pago), 'dd-MM-yyyy'), toDate(trim(fecha_pago), 'yyyyMMdd'))),",
+				"          estado_pago = iif(upper(trim(estado_pago)) == 'PAGADO' || upper(trim(estado_pago)) == 'P', 'PAGADO', iif(upper(trim(estado_pago)) == 'PENDIENTE' || upper(trim(estado_pago)) == 'E', 'PENDIENTE', iif(isNull(estado_pago) || trim(estado_pago) == '', toString(null()), upper(trim(estado_pago))))),",
+				"          nro_comprobante = iif(isNull(nro_comprobante) || trim(nro_comprobante) == '' || upper(trim(nro_comprobante)) == 'NULL', toString(null()), trim(nro_comprobante))) ~> derivedColumn2",
+				"derivedColumn2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          pago_id as integer,",
+				"          ci_beneficiaria as string,",
+				"          concepto_pago as string,",
+				"          monto_bs as decimal(10,2),",
+				"          fecha_pago as date,",
+				"          estado_pago as string,",
+				"          canal_pago as string,",
+				"          nro_comprobante as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          pago_id,",
+				"          ci_beneficiaria,",
+				"          concepto_pago,",
+				"          monto_bs,",
+				"          fecha_pago,",
+				"          estado_pago,",
+				"          canal_pago,",
+				"          nro_comprobante",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

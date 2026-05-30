@@ -1,0 +1,79 @@
+{
+	"name": "ds_silver_agenciasedem_recepciones",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_subsidios",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "silver/agenciasedem"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "recepcion_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "nro_lote",
+				"type": "varchar"
+			},
+			{
+				"name": "almacen_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "transportista_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "vehiculo_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "fecha_recepcion",
+				"type": "date"
+			},
+			{
+				"name": "cantidad_recibida",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "unidad",
+				"type": "varchar"
+			},
+			{
+				"name": "condicion",
+				"type": "varchar"
+			},
+			{
+				"name": "estado",
+				"type": "varchar"
+			},
+			{
+				"name": "responsable",
+				"type": "nvarchar"
+			},
+			{
+				"name": "nro_guia_remision",
+				"type": "varchar"
+			},
+			{
+				"name": "temperatura_llegada",
+				"type": "decimal",
+				"precision": 4,
+				"scale": 1
+			}
+		],
+		"typeProperties": {
+			"schema": "silver",
+			"table": "agenciasedem_recepciones"
+		}
+	}
+}

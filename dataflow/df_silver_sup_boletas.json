@@ -1,0 +1,84 @@
+{
+	"name": "df_silver_sup_boletas",
+	"properties": {
+		"folder": {
+			"name": "silver/sup"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_bronze_dw_sup_boletas",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_silver_sup_boletas",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "derivedColumn2"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          boleta_id as string,",
+				"          control_id as string,",
+				"          ci_beneficiaria as string,",
+				"          nro_boleta as string,",
+				"          fecha_emision as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\n    TRIM(CAST(boleta_id AS NVARCHAR))   AS boleta_id,\\n    TRIM(CAST(control_id AS NVARCHAR)) AS control_id,\\n    TRIM(ci_beneficiaria)               AS ci_beneficiaria,\\n    TRIM(nro_boleta)                   AS nro_boleta,\\n    TRIM(fecha_emision)                AS fecha_emision,\\n    TRIM(estado)                       AS estado\\nFROM bronze.sup_boletas',",
+				"     format: 'query') ~> source1",
+				"source1 derive(boleta_id = iif(isNull(boleta_id) || trim(boleta_id) == '' || isError(toInteger(trim(boleta_id))), -1, toInteger(trim(boleta_id))),",
+				"          control_id = iif(isNull(control_id) || trim(control_id) == '' || isError(toInteger(trim(control_id))), -1, toInteger(trim(control_id))),",
+				"          ci_beneficiaria = iif(isNull(ci_beneficiaria) || trim(replace(ci_beneficiaria, '\"', '')) == '', '000000', regexReplace(upper(trim(replace(ci_beneficiaria, '\"', ''))), '[^0-9]', ''))) ~> derivedColumn1",
+				"derivedColumn1 derive(nro_boleta = iif(isNull(nro_boleta) || trim(replace(nro_boleta, '\"', '')) == '' || upper(trim(replace(nro_boleta, '\"', ''))) == 'NULL', toString(null()), trim(replace(nro_boleta, '\"', ''))),",
+				"          fecha_emision = iif(isNull(fecha_emision) || trim(replace(fecha_emision, '\"', '')) == '' || upper(trim(replace(fecha_emision, '\"', ''))) == 'NULL' || upper(trim(replace(fecha_emision, '\"', ''))) == 'N/D', toDate('1900-01-01'), coalesce(toDate(trim(replace(fecha_emision, '\"', '')), 'yyyy-MM-dd'), toDate(trim(replace(fecha_emision, '\"', '')), 'dd/MM/yyyy'), toDate(trim(replace(fecha_emision, '\"', '')), 'MM/dd/yyyy'), toDate(trim(replace(fecha_emision, '\"', '')), 'dd-MM-yyyy'), toDate(trim(replace(fecha_emision, '\"', '')), 'yyyyMMdd'))),",
+				"          estado = case(     upper(trim(replace(estado, '\"', ''))) == 'VIGENTE', 'VIGENTE',     upper(trim(replace(estado, '\"', ''))) == 'CANJEADA' || upper(trim(replace(estado, '\"', ''))) == 'CANJE', 'CANJEADA',     upper(trim(replace(estado, '\"', ''))) == 'VENCIDA' || upper(trim(replace(estado, '\"', ''))) == 'VENCIDO', 'VENCIDA',     upper(trim(replace(estado, '\"', ''))) == 'ANULADA' || upper(trim(replace(estado, '\"', ''))) == 'ANULADO', 'ANULADA',     isNull(estado) || trim(replace(estado, '\"', '')) == '', toString(null()),     upper(trim(replace(estado, '\"', ''))) )) ~> derivedColumn2",
+				"derivedColumn2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          boleta_id as integer,",
+				"          control_id as integer,",
+				"          ci_beneficiaria as string,",
+				"          nro_boleta as string,",
+				"          fecha_emision as date,",
+				"          estado as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          boleta_id,",
+				"          control_id,",
+				"          ci_beneficiaria,",
+				"          nro_boleta,",
+				"          fecha_emision,",
+				"          estado",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

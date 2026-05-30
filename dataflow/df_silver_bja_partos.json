@@ -1,0 +1,82 @@
+{
+	"name": "df_silver_bja_partos",
+	"properties": {
+		"folder": {
+			"name": "silver/bja"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_bronze_dw_bja_partos",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_silver_bja_partos",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "derivedColumn2"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          parto_id as string,",
+				"          ci_madre as string,",
+				"          ci_recien_nacido as string,",
+				"          establecimiento_id as string,",
+				"          fecha_parto as string,",
+				"          tipo_parto as string,",
+				"          peso_nacimiento_kg as string,",
+				"          talla_nacimiento_cm as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\n    TRIM(CAST(parto_id AS NVARCHAR))           AS parto_id,\\n    TRIM(ci_madre)                              AS ci_madre,\\n    TRIM(ci_recien_nacido)                      AS ci_recien_nacido,\\n    TRIM(CAST(establecimiento_id AS NVARCHAR)) AS establecimiento_id,\\n    TRIM(fecha_parto)                          AS fecha_parto,\\n    TRIM(tipo_parto)                           AS tipo_parto,\\n    TRIM(CAST(peso_nacimiento_kg AS NVARCHAR)) AS peso_nacimiento_kg,\\n    TRIM(CAST(talla_nacimiento_cm AS NVARCHAR))AS talla_nacimiento_cm\\nFROM bronze.bja_partos',",
+				"     format: 'query') ~> source1",
+				"source1 derive(parto_id = iif(isNull(parto_id) || trim(parto_id) == '' || isError(toInteger(trim(parto_id))), -1, toInteger(trim(parto_id))),",
+				"          establecimiento_id = iif(isNull(establecimiento_id) || trim(establecimiento_id) == '' || isError(toInteger(trim(establecimiento_id))), -1, toInteger(trim(establecimiento_id))),",
+				"          ci_madre = iif(isNull(ci_madre) || trim(ci_madre) == '', '000000', regexReplace(upper(trim(ci_madre)), '[^0-9]', '')),",
+				"          ci_recien_nacido = iif(isNull(ci_recien_nacido) || trim(ci_recien_nacido) == '', '000000', regexReplace(upper(trim(ci_recien_nacido)), '[^0-9]', ''))) ~> derivedColumn1",
+				"derivedColumn1 derive(fecha_parto = iif(isNull(fecha_parto) || trim(fecha_parto) == '' || upper(trim(fecha_parto)) == 'NULL' || upper(trim(fecha_parto)) == 'N/D', toDate('1900-01-01'), coalesce(toDate(trim(fecha_parto), 'yyyy-MM-dd'), toDate(trim(fecha_parto), 'dd/MM/yyyy'), toDate(trim(fecha_parto), 'MM/dd/yyyy'), toDate(trim(fecha_parto), 'dd-MM-yyyy'), toDate(trim(fecha_parto), 'yyyyMMdd'))),",
+				"          tipo_parto = iif(upper(trim(tipo_parto)) == 'NATURAL' || upper(trim(tipo_parto)) == 'VAGINAL' || upper(trim(tipo_parto)) == 'NORMAL', 'NATURAL', iif(upper(trim(tipo_parto)) == 'CESAREA' || upper(trim(tipo_parto)) == 'CESÁREA' || upper(trim(tipo_parto)) == 'C', 'CESAREA', iif(isNull(tipo_parto) || trim(tipo_parto) == '', toString(null()), upper(trim(tipo_parto))))),",
+				"          peso_nacimiento_kg = iif(isNull(peso_nacimiento_kg) || trim(peso_nacimiento_kg) == '' || toDecimal(regexReplace(replace(trim(peso_nacimiento_kg),',','.'), '[^0-9.]',''), 4, 2) < 0.30 || toDecimal(regexReplace(replace(trim(peso_nacimiento_kg),',','.'), '[^0-9.]',''), 4, 2) > 7.00, toDecimal(toString(null()), 4, 2), toDecimal(regexReplace(replace(trim(peso_nacimiento_kg),',','.'), '[^0-9.]',''), 4, 2)),",
+				"          talla_nacimiento_cm = iif(isNull(talla_nacimiento_cm) || trim(talla_nacimiento_cm) == '' || toDecimal(regexReplace(replace(trim(talla_nacimiento_cm),',','.'), '[^0-9.]',''), 4, 1) < 30.0 || toDecimal(regexReplace(replace(trim(talla_nacimiento_cm),',','.'), '[^0-9.]',''), 4, 1) > 65.0, toDecimal(toString(null()), 4, 1), toDecimal(regexReplace(replace(trim(talla_nacimiento_cm),',','.'), '[^0-9.]',''), 4, 1))) ~> derivedColumn2",
+				"derivedColumn2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          parto_id as integer,",
+				"          ci_madre as string,",
+				"          ci_recien_nacido as string,",
+				"          establecimiento_id as integer,",
+				"          fecha_parto as date,",
+				"          tipo_parto as string,",
+				"          peso_nacimiento_kg as decimal(4,2),",
+				"          talla_nacimiento_cm as decimal(4,1)",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+			]
+		}
+	}
+}

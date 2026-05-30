@@ -1,0 +1,56 @@
+{
+	"name": "ds_bronze_agsedem_vehiculos",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "data_lake_subsidios",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "origenbronze/agenciasedem"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "vehiculos.csv",
+				"folderPath": "agenciasedem",
+				"fileSystem": "bronze"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "vehiculo_id",
+				"type": "String"
+			},
+			{
+				"name": "transportista_id",
+				"type": "String"
+			},
+			{
+				"name": "descripcion",
+				"type": "String"
+			},
+			{
+				"name": "placa",
+				"type": "String"
+			},
+			{
+				"name": "tipo",
+				"type": "String"
+			},
+			{
+				"name": "capacidad_kg",
+				"type": "String"
+			},
+			{
+				"name": "estado",
+				"type": "String"
+			}
+		]
+	}
+}

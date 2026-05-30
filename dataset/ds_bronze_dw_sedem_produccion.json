@@ -1,0 +1,72 @@
+{
+	"name": "ds_bronze_dw_sedem_produccion",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_subsidios",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "bronze/sedem"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "produccion_id",
+				"type": "nvarchar"
+			},
+			{
+				"name": "empresa_id",
+				"type": "nvarchar"
+			},
+			{
+				"name": "planta_id",
+				"type": "nvarchar"
+			},
+			{
+				"name": "producto_id",
+				"type": "nvarchar"
+			},
+			{
+				"name": "nro_lote",
+				"type": "nvarchar"
+			},
+			{
+				"name": "fecha_produccion",
+				"type": "nvarchar"
+			},
+			{
+				"name": "cantidad",
+				"type": "nvarchar"
+			},
+			{
+				"name": "unidad",
+				"type": "nvarchar"
+			},
+			{
+				"name": "turno",
+				"type": "nvarchar"
+			},
+			{
+				"name": "responsable",
+				"type": "nvarchar"
+			},
+			{
+				"name": "costo_produccion",
+				"type": "nvarchar"
+			},
+			{
+				"name": "estado",
+				"type": "nvarchar"
+			},
+			{
+				"name": "fecha_vencimiento",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "bronze",
+			"table": "sedem_produccion"
+		}
+	}
+}

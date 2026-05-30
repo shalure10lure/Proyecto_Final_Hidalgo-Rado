@@ -1,0 +1,51 @@
+{
+	"name": "ds_silver_agenciasedem_vehiculos",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_subsidios",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "silver/agenciasedem"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "vehiculo_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "transportista_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "descripcion",
+				"type": "nvarchar"
+			},
+			{
+				"name": "placa",
+				"type": "varchar"
+			},
+			{
+				"name": "tipo",
+				"type": "varchar"
+			},
+			{
+				"name": "capacidad_kg",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "estado",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "silver",
+			"table": "agenciasedem_vehiculos"
+		}
+	}
+}

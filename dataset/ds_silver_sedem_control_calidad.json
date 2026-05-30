@@ -1,0 +1,77 @@
+{
+	"name": "ds_silver_sedem_control_calidad",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_subsidios",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "silver/sedem"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "control_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "produccion_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "nro_lote",
+				"type": "varchar"
+			},
+			{
+				"name": "nro_control",
+				"type": "tinyint",
+				"precision": 3
+			},
+			{
+				"name": "fecha_control",
+				"type": "date"
+			},
+			{
+				"name": "parametro",
+				"type": "nvarchar"
+			},
+			{
+				"name": "valor_medido",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 4
+			},
+			{
+				"name": "unidad_medida",
+				"type": "varchar"
+			},
+			{
+				"name": "valor_minimo",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 4
+			},
+			{
+				"name": "valor_maximo",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 4
+			},
+			{
+				"name": "cumple",
+				"type": "bit"
+			},
+			{
+				"name": "inspector",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "silver",
+			"table": "sedem_control_calidad"
+		}
+	}
+}

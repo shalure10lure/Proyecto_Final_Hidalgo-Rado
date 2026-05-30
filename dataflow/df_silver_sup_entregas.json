@@ -1,0 +1,104 @@
+{
+	"name": "df_silver_sup_entregas",
+	"properties": {
+		"folder": {
+			"name": "silver/sup"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_bronze_dw_sup_entregas",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_silver_sup_entregas",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "derivedColumn2"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          entrega_id as string,",
+				"          boleta_id as string,",
+				"          ci_beneficiaria as string,",
+				"          establecimiento_id as string,",
+				"          paquete_id as string,",
+				"          paquete_nombre as string,",
+				"          fecha_entrega as string,",
+				"          lote_produccion as string,",
+				"          peso_paquete_kg as string,",
+				"          fecha_proxima_entrega as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\n    TRIM(CAST(entrega_id AS NVARCHAR))         AS entrega_id,\\n    TRIM(CAST(boleta_id AS NVARCHAR))          AS boleta_id,\\n    TRIM(ci_beneficiaria)                       AS ci_beneficiaria,\\n    TRIM(CAST(establecimiento_id AS NVARCHAR)) AS establecimiento_id,\\n    TRIM(CAST(paquete_id AS NVARCHAR))         AS paquete_id,\\n    TRIM(paquete_nombre)                       AS paquete_nombre,\\n    TRIM(fecha_entrega)                        AS fecha_entrega,\\n    TRIM(lote_produccion)                      AS lote_produccion,\\n    TRIM(CAST(peso_paquete_kg AS NVARCHAR))    AS peso_paquete_kg,\\n    TRIM(fecha_proxima_entrega)                AS fecha_proxima_entrega\\nFROM bronze.sup_entregas',",
+				"     format: 'query') ~> source1",
+				"source1 derive(entrega_id = iif(isNull(entrega_id) || trim(entrega_id) == '' || isError(toInteger(trim(entrega_id))), -1, toInteger(trim(entrega_id))),",
+				"          boleta_id = iif(isNull(boleta_id) || trim(boleta_id) == '' || isError(toInteger(trim(boleta_id))), -1, toInteger(trim(boleta_id))),",
+				"          establecimiento_id = iif(isNull(establecimiento_id) || trim(establecimiento_id) == '' || isError(toInteger(trim(establecimiento_id))), -1, toInteger(trim(establecimiento_id))),",
+				"          paquete_id = iif(isNull(paquete_id) || trim(paquete_id) == '' || isError(toInteger(trim(paquete_id))), -1, toInteger(trim(paquete_id))),",
+				"          ci_beneficiaria = iif(isNull(ci_beneficiaria) || trim(ci_beneficiaria) == '', '000000', regexReplace(upper(trim(ci_beneficiaria)), '[^0-9]', ''))) ~> derivedColumn1",
+				"derivedColumn1 derive(paquete_nombre = iif(isNull(paquete_nombre) || trim(paquete_nombre) == '' || upper(trim(paquete_nombre)) == 'NULL', toString(null()), initCap(trim(paquete_nombre))),",
+				"          lote_produccion = iif(isNull(lote_produccion) || trim(lote_produccion) == '' || upper(trim(lote_produccion)) == 'NULL', toString(null()), upper(trim(lote_produccion))),",
+				"          fecha_entrega = iif(isNull(fecha_entrega) || trim(fecha_entrega) == '' || upper(trim(fecha_entrega)) == 'NULL' || upper(trim(fecha_entrega)) == 'N/D', toDate('1900-01-01'), coalesce(toDate(trim(fecha_entrega), 'yyyy-MM-dd'), toDate(trim(fecha_entrega), 'dd/MM/yyyy'), toDate(trim(fecha_entrega), 'MM/dd/yyyy'), toDate(trim(fecha_entrega), 'dd-MM-yyyy'), toDate(trim(fecha_entrega), 'yyyyMMdd'))),",
+				"          fecha_proxima_entrega = iif(isNull(fecha_proxima_entrega) || trim(fecha_proxima_entrega) == '' || upper(trim(fecha_proxima_entrega)) == 'NULL' || upper(trim(fecha_proxima_entrega)) == 'N/D', toDate('1900-01-01'), coalesce(toDate(trim(fecha_proxima_entrega), 'yyyy-MM-dd'), toDate(trim(fecha_proxima_entrega), 'dd/MM/yyyy'), toDate(trim(fecha_proxima_entrega), 'MM/dd/yyyy'), toDate(trim(fecha_proxima_entrega), 'dd-MM-yyyy'), toDate(trim(fecha_proxima_entrega), 'yyyyMMdd'))),",
+				"          peso_paquete_kg = coalesce(\r",
+				"    toDecimal(regexReplace(replace(trim(peso_paquete_kg), ',', '.'), '[^0-9.]', ''), 6, 2),\r",
+				"    toDecimal('0.00', 6, 2)\r",
+				")\r",
+				") ~> derivedColumn2",
+				"derivedColumn2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          entrega_id as integer,",
+				"          boleta_id as integer,",
+				"          ci_beneficiaria as string,",
+				"          establecimiento_id as integer,",
+				"          paquete_id as integer,",
+				"          paquete_nombre as string,",
+				"          fecha_entrega as date,",
+				"          lote_produccion as string,",
+				"          peso_paquete_kg as decimal(5,2),",
+				"          fecha_proxima_entrega as date",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          entrega_id,",
+				"          boleta_id,",
+				"          ci_beneficiaria,",
+				"          establecimiento_id,",
+				"          paquete_id,",
+				"          paquete_nombre,",
+				"          fecha_entrega,",
+				"          lote_produccion,",
+				"          peso_paquete_kg,",
+				"          fecha_proxima_entrega",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

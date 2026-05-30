@@ -1,0 +1,52 @@
+{
+	"name": "ds_bronze_dw_sup_controles",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_subsidios",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "bronze/sup"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "control_id",
+				"type": "nvarchar"
+			},
+			{
+				"name": "ci_beneficiaria",
+				"type": "nvarchar"
+			},
+			{
+				"name": "establecimiento_id",
+				"type": "nvarchar"
+			},
+			{
+				"name": "nro_control",
+				"type": "nvarchar"
+			},
+			{
+				"name": "fecha_control",
+				"type": "nvarchar"
+			},
+			{
+				"name": "semana_gestacion",
+				"type": "nvarchar"
+			},
+			{
+				"name": "peso_madre_kg",
+				"type": "nvarchar"
+			},
+			{
+				"name": "presion_arterial",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "bronze",
+			"table": "sup_controles"
+		}
+	}
+}

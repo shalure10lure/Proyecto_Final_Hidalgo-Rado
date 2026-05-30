@@ -1,0 +1,52 @@
+{
+	"name": "ds_bronze_dw_bja_partos",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_subsidios",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "bronze/bja"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "parto_id",
+				"type": "nvarchar"
+			},
+			{
+				"name": "ci_madre",
+				"type": "nvarchar"
+			},
+			{
+				"name": "ci_recien_nacido",
+				"type": "nvarchar"
+			},
+			{
+				"name": "establecimiento_id",
+				"type": "nvarchar"
+			},
+			{
+				"name": "fecha_parto",
+				"type": "nvarchar"
+			},
+			{
+				"name": "tipo_parto",
+				"type": "nvarchar"
+			},
+			{
+				"name": "peso_nacimiento_kg",
+				"type": "nvarchar"
+			},
+			{
+				"name": "talla_nacimiento_cm",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "bronze",
+			"table": "bja_partos"
+		}
+	}
+}

@@ -1,0 +1,85 @@
+{
+	"name": "df_silver_agencias_transportistas",
+	"properties": {
+		"folder": {
+			"name": "silver/agenciasedem"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_bronze_dw_agenciasedem_transportistas",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_silver_agenciasedem_transportistas",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          transportista_id as string,",
+				"          razon_social as string,",
+				"          nit as string,",
+				"          municipio as string,",
+				"          contacto as string,",
+				"          telefono as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\n    TRIM(CAST(transportista_id AS NVARCHAR)) AS transportista_id,\\n    TRIM(razon_social)                       AS razon_social,\\n    TRIM(nit)                                AS nit,\\n    TRIM(municipio)                          AS municipio,\\n    TRIM(contacto)                           AS contacto,\\n    TRIM(telefono)                           AS telefono,\\n    TRIM(estado)                             AS estado\\nFROM bronze.agenciasedem_transportistas',",
+				"     format: 'query') ~> source1",
+				"source1 derive(transportista_id = iif(isNull(transportista_id) || trim(replace(transportista_id, '\"', '')) == '' || isError(toInteger(trim(replace(transportista_id, '\"', '')))), -1, toInteger(trim(replace(transportista_id, '\"', '')))),",
+				"          razon_social = iif(isNull(razon_social) || trim(replace(razon_social, '\"', '')) == '', 'Sin Razon Social', initCap(trim(replace(replace(razon_social, 'LogÃ-stica', 'Logistica'), '\"', '')))),",
+				"          municipio = iif(isNull(municipio) || trim(replace(municipio, '\"', '')) == '' || upper(trim(replace(municipio, '\"', ''))) == 'NULL', toString(null()), initCap(trim(replace(municipio, '\"', '')))),",
+				"          contacto = iif(isNull(contacto) || trim(replace(contacto, '\"', '')) == '' || upper(trim(replace(contacto, '\"', ''))) == 'NULL', toString(null()), initCap(trim(replace(contacto, '\"', '')))),",
+				"          nit = iif(isNull(telefono) || trim(replace(telefono, '\"', '')) == '' || upper(trim(replace(telefono, '\"', ''))) == 'NULL', toString(null()), trim(replace(telefono, '\"', ''))),",
+				"          telefono = iif(isNull(telefono) || trim(replace(telefono, '\"', '')) == '' || upper(trim(replace(telefono, '\"', ''))) == 'NULL', toString(null()), trim(replace(telefono, '\"', ''))),",
+				"          estado = iif(isNull(estado) || trim(replace(estado, '\"', '')) == '', toString(null()), upper(trim(replace(estado, '\"', ''))))) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          transportista_id as integer,",
+				"          razon_social as string,",
+				"          nit as string,",
+				"          municipio as string,",
+				"          contacto as string,",
+				"          telefono as string,",
+				"          estado as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          transportista_id,",
+				"          razon_social,",
+				"          nit,",
+				"          municipio,",
+				"          contacto,",
+				"          telefono,",
+				"          estado",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

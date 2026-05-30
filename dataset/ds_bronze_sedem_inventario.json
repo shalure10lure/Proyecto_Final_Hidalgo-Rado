@@ -1,0 +1,68 @@
+{
+	"name": "ds_bronze_sedem_inventario",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "data_lake_subsidios",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "origenbronze/sedem"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "sedem_inventario.csv",
+				"folderPath": "sedem",
+				"fileSystem": "bronze"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "inventario_id",
+				"type": "String"
+			},
+			{
+				"name": "empresa_id",
+				"type": "String"
+			},
+			{
+				"name": "producto_id",
+				"type": "String"
+			},
+			{
+				"name": "nro_lote",
+				"type": "String"
+			},
+			{
+				"name": "cantidad_producida",
+				"type": "String"
+			},
+			{
+				"name": "cantidad_despachada",
+				"type": "String"
+			},
+			{
+				"name": "cantidad_disponible",
+				"type": "String"
+			},
+			{
+				"name": "estado",
+				"type": "String"
+			},
+			{
+				"name": "fecha_ultimo_movimiento",
+				"type": "String"
+			},
+			{
+				"name": "almacen",
+				"type": "String"
+			}
+		]
+	}
+}

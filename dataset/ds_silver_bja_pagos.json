@@ -1,0 +1,55 @@
+{
+	"name": "ds_silver_bja_pagos",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_subsidios",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "silver/bja"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "pago_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "ci_beneficiaria",
+				"type": "varchar"
+			},
+			{
+				"name": "concepto_pago",
+				"type": "nvarchar"
+			},
+			{
+				"name": "monto_bs",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 2
+			},
+			{
+				"name": "fecha_pago",
+				"type": "date"
+			},
+			{
+				"name": "estado_pago",
+				"type": "varchar"
+			},
+			{
+				"name": "canal_pago",
+				"type": "nvarchar"
+			},
+			{
+				"name": "nro_comprobante",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "silver",
+			"table": "bja_pagos"
+		}
+	}
+}

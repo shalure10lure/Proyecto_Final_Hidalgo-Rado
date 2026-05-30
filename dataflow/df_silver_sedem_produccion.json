@@ -1,0 +1,64 @@
+{
+	"name": "df_silver_sedem_produccion",
+	"properties": {
+		"folder": {
+			"name": "silver/sedem"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_bronze_dw_sedem_produccion",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "derivedColumn2"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          produccion_id as string,",
+				"          empresa_id as string,",
+				"          planta_id as string,",
+				"          producto_id as string,",
+				"          nro_lote as string,",
+				"          fecha_produccion as string,",
+				"          cantidad as string,",
+				"          unidad as string,",
+				"          turno as string,",
+				"          responsable as string,",
+				"          costo_produccion as string,",
+				"          estado as string,",
+				"          fecha_vencimiento as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\n    TRIM(CAST(produccion_id AS NVARCHAR))    AS produccion_id,\\n    TRIM(CAST(empresa_id AS NVARCHAR))       AS empresa_id,\\n    TRIM(CAST(planta_id AS NVARCHAR))        AS planta_id,\\n    TRIM(CAST(producto_id AS NVARCHAR))      AS producto_id,\\n    TRIM(nro_lote)                           AS nro_lote,\\n    TRIM(fecha_produccion)                   AS fecha_produccion,\\n    TRIM(CAST(cantidad AS NVARCHAR))         AS cantidad,\\n    TRIM(unidad)                             AS unidad,\\n    TRIM(turno)                              AS turno,\\n    TRIM(responsable)                        AS responsable,\\n    TRIM(CAST(costo_produccion AS NVARCHAR)) AS costo_produccion,\\n    TRIM(estado)                             AS estado,\\n    TRIM(fecha_vencimiento)                  AS fecha_vencimiento\\nFROM bronze.sedem_produccion',",
+				"     format: 'query') ~> source1",
+				"source1 derive(produccion_id = coalesce(toInteger(regexReplace(trim(produccion_id), '[^0-9]', '')), -1),",
+				"          empresa_id = coalesce(toInteger(regexReplace(trim(empresa_id), '[^0-9]', '')), -1),",
+				"          planta_id = coalesce(toInteger(regexReplace(trim(planta_id), '[^0-9]', '')), -1),",
+				"          producto_id = coalesce(toInteger(regexReplace(trim(producto_id), '[^0-9]', '')), -1),",
+				"          nro_lote = iif(isNull(nro_lote) || trim(nro_lote) == '' || upper(trim(nro_lote)) == 'NULL', 'Sin Lote', upper(trim(nro_lote))),",
+				"          cantidad = coalesce(toInteger(regexReplace(trim(cantidad), '[^0-9-]', '')), 0),",
+				"          costo_produccion = coalesce(toDecimal(regexReplace(replace(trim(costo_produccion), ',', '.'), '[^0-9.]', ''), 12, 2), toDecimal('0.00', 12, 2))) ~> derivedColumn1",
+				"derivedColumn1 derive(unidad = iif(isNull(unidad) || trim(unidad) == '' || upper(trim(unidad)) == 'NULL', toString(null()), lower(trim(unidad))),",
+				"          turno = case(     upper(trim(turno)) == 'MANANA' || upper(trim(turno)) == 'MAÑANA' || upper(trim(turno)) == 'M', 'Mañana',     upper(trim(turno)) == 'TARDE' || upper(trim(turno)) == 'T', 'Tarde',     upper(trim(turno)) == 'NOCHE' || upper(trim(turno)) == 'N', 'Noche',     isNull(turno) || trim(turno) == '', toString(null()),     initCap(trim(turno)) ),",
+				"          responsable = iif(isNull(responsable) || trim(responsable) == '' || upper(trim(responsable)) == 'NULL', toString(null()), initCap(trim(responsable))),",
+				"          estado = case(     upper(trim(estado)) == 'APROBADO' || upper(trim(estado)) == 'A', 'Aprobado',     upper(trim(estado)) == 'RECHAZADO' || upper(trim(estado)) == 'R', 'Rechazado',     upper(trim(estado)) == 'EN REVISION' || upper(trim(estado)) == 'EN REVISIÓN' || upper(trim(estado)) == 'E', 'En revisión',     isNull(estado) || trim(estado) == '', toString(null()),     initCap(trim(estado)) ),",
+				"          fecha_produccion = iif(isNull(fecha_produccion) || trim(fecha_produccion) == '' || upper(trim(fecha_produccion)) == 'NULL', toDate('1900-01-01'), coalesce(toDate(trim(fecha_produccion), 'yyyy-MM-dd'), toDate(trim(fecha_produccion), 'dd/MM/yyyy'), toDate(trim(fecha_produccion), 'MM/dd/yyyy'), toDate(trim(fecha_produccion), 'dd-MM-yyyy'), toDate(trim(fecha_produccion), 'yyyyMMdd'))),",
+				"          fecha_vencimiento = iif(isNull(fecha_vencimiento) || trim(fecha_vencimiento) == '' || upper(trim(fecha_vencimiento)) == 'NULL', toDate('1900-01-01'), coalesce(toDate(trim(fecha_vencimiento), 'yyyy-MM-dd'), toDate(trim(fecha_vencimiento), 'dd/MM/yyyy'), toDate(trim(fecha_vencimiento), 'MM/dd/yyyy'), toDate(trim(fecha_vencimiento), 'dd-MM-yyyy'), toDate(trim(fecha_vencimiento), 'yyyyMMdd')))) ~> derivedColumn2"
+			]
+		}
+	}
+}

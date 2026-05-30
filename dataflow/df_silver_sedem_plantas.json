@@ -1,0 +1,85 @@
+{
+	"name": "df_silver_sedem_plantas",
+	"properties": {
+		"folder": {
+			"name": "silver/sedem"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_bronze_dw_sedem_plantas",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_silver_sedem_plantas",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          planta_id as string,",
+				"          empresa_id as string,",
+				"          nombre as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          tipo as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\n    TRIM(CAST(planta_id AS NVARCHAR))  AS planta_id,\\n    TRIM(CAST(empresa_id AS NVARCHAR)) AS empresa_id,\\n    TRIM(nombre)                       AS nombre,\\n    TRIM(municipio)                    AS municipio,\\n    TRIM(departamento)                 AS departamento,\\n    TRIM(tipo)                         AS tipo,\\n    TRIM(estado)                       AS estado\\nFROM bronze.sedem_plantas',",
+				"     format: 'query') ~> source1",
+				"source1 derive(planta_id = coalesce(toInteger(regexReplace(trim(empresa_id), '[^0-9]', '')), -1),",
+				"          empresa_id = coalesce(toInteger(regexReplace(trim(empresa_id), '[^0-9]', '')), -1),",
+				"          nombre = iif(isNull(nombre) || trim(nombre) == '' || upper(trim(nombre)) == 'NULL', 'Sin Nombre Planta', initCap(trim(nombre))),",
+				"          municipio = iif(isNull(municipio) || trim(municipio) == '' || upper(trim(municipio)) == 'NULL', toString(null()), initCap(trim(municipio))),",
+				"          departamento = iif(isNull(departamento) || trim(departamento) == '' || upper(trim(departamento)) == 'NULL', toString(null()), initCap(trim(departamento))),",
+				"          tipo = case(     upper(trim(tipo)) == 'PRODUCCION' || upper(trim(tipo)) == 'PRODUCCIÓN' || upper(trim(tipo)) == 'P', 'Producción',     upper(trim(tipo)) == 'DISTRIBUCION' || upper(trim(tipo)) == 'DISTRIBUCIÓN' || upper(trim(tipo)) == 'D', 'Distribución',     isNull(tipo) || trim(tipo) == '', toString(null()),     initCap(trim(tipo)) ),",
+				"          estado = case(     upper(trim(estado)) == 'ACTIVA' || upper(trim(estado)) == 'ACTIVO' || upper(trim(estado)) == 'A', 'Activa',     upper(trim(estado)) == 'INACTIVA' || upper(trim(estado)) == 'INACTIVO' || upper(trim(estado)) == 'I', 'Inactiva',     isNull(estado) || trim(estado) == '', toString(null()),     initCap(trim(estado)) )) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          planta_id as integer,",
+				"          empresa_id as integer,",
+				"          nombre as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          tipo as string,",
+				"          estado as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          planta_id,",
+				"          empresa_id,",
+				"          nombre,",
+				"          municipio,",
+				"          departamento,",
+				"          tipo,",
+				"          estado",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

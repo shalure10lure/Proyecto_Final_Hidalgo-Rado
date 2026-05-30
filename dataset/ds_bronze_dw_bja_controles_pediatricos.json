@@ -1,0 +1,60 @@
+{
+	"name": "ds_bronze_dw_bja_controles_pediatricos",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_subsidios",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "bronze/bja"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "control_pediatrico_id",
+				"type": "nvarchar"
+			},
+			{
+				"name": "ci_nino",
+				"type": "nvarchar"
+			},
+			{
+				"name": "ci_madre",
+				"type": "nvarchar"
+			},
+			{
+				"name": "establecimiento_id",
+				"type": "nvarchar"
+			},
+			{
+				"name": "nro_control",
+				"type": "nvarchar"
+			},
+			{
+				"name": "fecha_control",
+				"type": "nvarchar"
+			},
+			{
+				"name": "peso_nino_kg",
+				"type": "nvarchar"
+			},
+			{
+				"name": "talla_nino_cm",
+				"type": "nvarchar"
+			},
+			{
+				"name": "vacuna_aplicada",
+				"type": "nvarchar"
+			},
+			{
+				"name": "resultado",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "bronze",
+			"table": "bja_controles_pediatricos"
+		}
+	}
+}

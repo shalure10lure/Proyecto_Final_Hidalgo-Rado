@@ -1,0 +1,77 @@
+{
+	"name": "df_silver_sup_catalogo_paquetes",
+	"properties": {
+		"folder": {
+			"name": "silver/sup"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_bronze_dw_sup_catalogo_paquetes",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_silver_sup_catalogo_paquetes",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          paquete_id as string,",
+				"          nombre as string,",
+				"          contenido as string,",
+				"          peso_estandar_kg as string,",
+				"          costo_estimado_bs as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\n    TRIM(CAST(paquete_id AS NVARCHAR))        AS paquete_id,\\n    TRIM(nombre)                              AS nombre,\\n    TRIM(contenido)                           AS contenido,\\n    TRIM(CAST(peso_estandar_kg AS NVARCHAR))  AS peso_estandar_kg,\\n    TRIM(CAST(costo_estimado_bs AS NVARCHAR)) AS costo_estimado_bs\\nFROM bronze.sup_catalogo_paquetes',",
+				"     format: 'query') ~> source1",
+				"source1 derive(paquete_id = iif(isNull(paquete_id) || trim(paquete_id) == '' || isError(toInteger(trim(paquete_id))), -1, toInteger(trim(paquete_id))),",
+				"          nombre = iif(     isNull(nombre) || trim(replace(nombre, '\"', '')) == '' || upper(trim(replace(nombre, '\"', ''))) == 'NULL',      'Sin Nombre De Paquete',      initCap(trim(replace(nombre, '\"', ''))) ),",
+				"          contenido = iif(     isNull(contenido) || trim(replace(contenido, '\"', '')) == '' || upper(trim(replace(contenido, '\"', ''))) == 'NULL',      toString(null()),      initCap(trim(replace(contenido, '\"', ''))) ),",
+				"          peso_estandar_kg = iif(     isNull(peso_estandar_kg) || trim(replace(peso_estandar_kg, '\"', '')) == '',      toDecimal(toString(null()), 5, 2),      toDecimal(regexReplace(replace(trim(replace(peso_estandar_kg, '\"', '')), ',', '.'), '[^0-9.]', ''), 5, 2) ),",
+				"          costo_estimado_bs = iif(     isNull(costo_estimado_bs) || trim(replace(costo_estimado_bs, '\"', '')) == '',      toDecimal(toString(null()), 8, 2),      toDecimal(regexReplace(replace(trim(replace(costo_estimado_bs, '\"', '')), ',', '.'), '[^0-9.]', ''), 8, 2) )) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          paquete_id as integer,",
+				"          nombre as string,",
+				"          contenido as string,",
+				"          peso_estandar_kg as decimal(5,2),",
+				"          costo_estimado_bs as decimal(8,2)",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          paquete_id,",
+				"          nombre,",
+				"          contenido,",
+				"          peso_estandar_kg,",
+				"          costo_estimado_bs",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

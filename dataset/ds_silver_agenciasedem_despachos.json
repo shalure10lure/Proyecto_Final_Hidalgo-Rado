@@ -1,0 +1,78 @@
+{
+	"name": "ds_silver_agenciasedem_despachos",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_subsidios",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "silver/agenciasedem"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "despacho_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "recepcion_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "nro_lote",
+				"type": "varchar"
+			},
+			{
+				"name": "almacen_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "transportista_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "vehiculo_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "fecha_despacho",
+				"type": "date"
+			},
+			{
+				"name": "cantidad_despachada",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "centro_destino",
+				"type": "nvarchar"
+			},
+			{
+				"name": "estado",
+				"type": "varchar"
+			},
+			{
+				"name": "responsable",
+				"type": "nvarchar"
+			},
+			{
+				"name": "nro_guia_despacho",
+				"type": "varchar"
+			},
+			{
+				"name": "fecha_llegada",
+				"type": "date"
+			}
+		],
+		"typeProperties": {
+			"schema": "silver",
+			"table": "agenciasedem_despachos"
+		}
+	}
+}

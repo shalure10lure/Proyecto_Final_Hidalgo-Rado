@@ -1,0 +1,85 @@
+{
+	"name": "df_silver_agencias_almacenes",
+	"properties": {
+		"folder": {
+			"name": "silver/agenciasedem"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_bronze_dw_agenciasedem_almacenes",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_silver_agenciasedem_almacenes",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          almacen_id as string,",
+				"          nombre as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          direccion as string,",
+				"          capacidad_m3 as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\n    TRIM(CAST(almacen_id AS NVARCHAR))   AS almacen_id,\\n    TRIM(nombre)                         AS nombre,\\n    TRIM(municipio)                      AS municipio,\\n    TRIM(departamento)                   AS departamento,\\n    TRIM(direccion)                      AS direccion,\\n    TRIM(CAST(capacidad_m3 AS NVARCHAR)) AS capacidad_m3,\\n    TRIM(estado)                         AS estado\\nFROM bronze.agenciasedem_almacenes',",
+				"     format: 'query') ~> source1",
+				"source1 derive(almacen_id = iif(isNull(almacen_id) || trim(replace(almacen_id, '\"', '')) == '' || isError(toInteger(trim(replace(almacen_id, '\"', '')))), -1, toInteger(trim(replace(almacen_id, '\"', '')))),",
+				"          capacidad_m3 = iif(isNull(capacidad_m3) || trim(replace(capacidad_m3, '\"', '')) == '' || isError(toInteger(trim(replace(capacidad_m3, '\"', '')))), toInteger(toString(null())), toInteger(trim(replace(capacidad_m3, '\"', '')))),",
+				"          nombre = iif(isNull(nombre) || trim(replace(nombre, '\"', '')) == '', 'Sin Nombre Almacen', initCap(trim(replace(replace(nombre, 'AlmacÃ©n', 'Almacen'), '\"', '')))),",
+				"          municipio = iif(isNull(municipio) || trim(replace(municipio, '\"', '')) == '' || upper(trim(replace(municipio, '\"', ''))) == 'NULL', toString(null()), initCap(trim(replace(municipio, '\"', '')))),",
+				"          departamento = iif(isNull(departamento) || trim(replace(departamento, '\"', '')) == '' || upper(trim(replace(departamento, '\"', ''))) == 'NULL', toString(null()), initCap(trim(replace(departamento, '\"', '')))),",
+				"          direccion = iif(isNull(direccion) || trim(replace(direccion, '\"', '')) == '' || upper(trim(replace(direccion, '\"', ''))) == 'NULL', toString(null()), initCap(trim(replace(direccion, '\"', '')))),",
+				"          estado = iif(isNull(estado) || trim(replace(estado, '\"', '')) == '', toString(null()), upper(trim(replace(estado, '\"', ''))))) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          almacen_id as integer,",
+				"          nombre as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          direccion as string,",
+				"          capacidad_m3 as integer,",
+				"          estado as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          almacen_id,",
+				"          nombre,",
+				"          municipio,",
+				"          departamento,",
+				"          direccion,",
+				"          capacidad_m3,",
+				"          estado",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

@@ -1,0 +1,116 @@
+{
+	"name": "df_silver_sedem_control_calidad",
+	"properties": {
+		"folder": {
+			"name": "silver/sedem"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_bronze_dw_sedem_control_calidad",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_silver_sedem_control_calidad",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "derivedColumn2"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          control_id as string,",
+				"          produccion_id as string,",
+				"          nro_lote as string,",
+				"          nro_control as string,",
+				"          fecha_control as string,",
+				"          parametro as string,",
+				"          valor_medido as string,",
+				"          unidad_medida as string,",
+				"          valor_minimo as string,",
+				"          valor_maximo as string,",
+				"          cumple as string,",
+				"          inspector as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\n    TRIM(CAST(control_id AS NVARCHAR))    AS control_id,\\n    TRIM(CAST(produccion_id AS NVARCHAR)) AS produccion_id,\\n    TRIM(nro_lote)                        AS nro_lote,\\n    TRIM(CAST(nro_control AS NVARCHAR))   AS nro_control,\\n    TRIM(fecha_control)                   AS fecha_control,\\n    TRIM(parametro)                       AS parametro,\\n    TRIM(CAST(valor_medido AS NVARCHAR))  AS valor_medido,\\n    TRIM(unidad_medida)                   AS unidad_medida,\\n    TRIM(CAST(valor_minimo AS NVARCHAR))  AS valor_minimo,\\n    TRIM(CAST(valor_maximo AS NVARCHAR))  AS valor_maximo,\\n    TRIM(cumple)                          AS cumple,\\n    TRIM(inspector)                       AS inspector\\nFROM bronze.sedem_control_calidad',",
+				"     format: 'query') ~> source1",
+				"source1 derive(control_id = iif(isNull(control_id) || trim(replace(control_id, '\"', '')) == '' || isError(toInteger(trim(replace(control_id, '\"', '')))), -1, toInteger(trim(replace(control_id, '\"', '')))),",
+				"          produccion_id = iif(isNull(produccion_id) || trim(replace(produccion_id, '\"', '')) == '' || isError(toInteger(trim(replace(produccion_id, '\"', '')))), -1, toInteger(trim(replace(produccion_id, '\"', '')))),",
+				"          nro_control = coalesce(toShort(regexReplace(trim(replace(nro_control, '\"', '')), '[^0-9]', '')), toShort(0))\r",
+				",",
+				"          nro_lote = iif(isNull(nro_lote) || trim(replace(nro_lote, '\"', '')) == '' || upper(trim(replace(nro_lote, '\"', ''))) == 'NULL', 'Sin Lote', upper(trim(replace(nro_lote, '\"', '')))),",
+				"          fecha_control = iif(isNull(fecha_control) || trim(replace(fecha_control, '\"', '')) == '' || upper(trim(replace(fecha_control, '\"', ''))) == 'NULL', toDate('1900-01-01'), coalesce(toDate(trim(replace(fecha_control, '\"', '')), 'yyyy-MM-dd'), toDate(trim(replace(fecha_control, '\"', '')), 'dd/MM/yyyy'), toDate(trim(replace(fecha_control, '\"', '')), 'MM/dd/yyyy'), toDate(trim(replace(fecha_control, '\"', '')), 'dd-MM-yyyy'), toDate(trim(replace(fecha_control, '\"', '')), 'yyyyMMdd'))),",
+				"          parametro = iif(isNull(parametro) || trim(replace(parametro, '\"', '')) == '', toString(null()), initCap(trim(replace(parametro, '\"', ''))))) ~> derivedColumn1",
+				"derivedColumn1 derive(unidad_medida = iif(isNull(unidad_medida) || trim(replace(unidad_medida, '\"', '')) == '', toString(null()), trim(replace(unidad_medida, '\"', ''))),",
+				"          inspector = iif(isNull(inspector) || trim(replace(inspector, '\"', '')) == '', toString(null()), initCap(trim(replace(inspector, '\"', '')))),",
+				"          valor_medido = coalesce(toDecimal(regexReplace(replace(trim(replace(valor_medido, '\"', '')), ',', '.'), '[^0-9.]', ''), 10, 4), toDecimal('0.0000', 10, 4)),",
+				"          valor_minimo = coalesce(toDecimal(regexReplace(replace(trim(replace(valor_minimo, '\"', '')), ',', '.'), '[^0-9.]', ''), 10, 4), toDecimal('0.0000', 10, 4)),",
+				"          valor_maximo = coalesce(toDecimal(regexReplace(replace(trim(replace(valor_maximo, '\"', '')), ',', '.'), '[^0-9.]', ''), 10, 4), toDecimal('0.0000', 10, 4)),",
+				"          cumple = toBoolean(\r",
+				"    iif(\r",
+				"        in(['SI', '1', 'TRUE', 'VERDADERO', 'CUMPLE'], upper(trim(replace(cumple, '\"', '')))), \r",
+				"        'true', \r",
+				"        'false'\r",
+				"    )\r",
+				")\r",
+				") ~> derivedColumn2",
+				"derivedColumn2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          control_id as integer,",
+				"          produccion_id as integer,",
+				"          nro_lote as string,",
+				"          nro_control as integer,",
+				"          fecha_control as date,",
+				"          parametro as string,",
+				"          valor_medido as decimal(10,4),",
+				"          unidad_medida as string,",
+				"          valor_minimo as decimal(10,4),",
+				"          valor_maximo as decimal(10,4),",
+				"          cumple as boolean,",
+				"          inspector as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          control_id,",
+				"          produccion_id,",
+				"          nro_lote,",
+				"          nro_control,",
+				"          fecha_control,",
+				"          parametro,",
+				"          valor_medido,",
+				"          unidad_medida,",
+				"          valor_minimo,",
+				"          valor_maximo,",
+				"          cumple,",
+				"          inspector",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

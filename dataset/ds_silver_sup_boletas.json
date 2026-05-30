@@ -1,0 +1,46 @@
+{
+	"name": "ds_silver_sup_boletas",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_subsidios",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "silver/sup"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "boleta_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "control_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "ci_beneficiaria",
+				"type": "varchar"
+			},
+			{
+				"name": "nro_boleta",
+				"type": "varchar"
+			},
+			{
+				"name": "fecha_emision",
+				"type": "date"
+			},
+			{
+				"name": "estado",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "silver",
+			"table": "sup_boletas"
+		}
+	}
+}

@@ -1,0 +1,80 @@
+{
+	"name": "ds_bronze_agsedem_despachos",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "data_lake_subsidios",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "origenbronze/agenciasedem"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "despachos.csv",
+				"folderPath": "agenciasedem",
+				"fileSystem": "bronze"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "despacho_id",
+				"type": "String"
+			},
+			{
+				"name": "recepcion_id",
+				"type": "String"
+			},
+			{
+				"name": "nro_lote",
+				"type": "String"
+			},
+			{
+				"name": "almacen_id",
+				"type": "String"
+			},
+			{
+				"name": "transportista_id",
+				"type": "String"
+			},
+			{
+				"name": "vehiculo_id",
+				"type": "String"
+			},
+			{
+				"name": "fecha_despacho",
+				"type": "String"
+			},
+			{
+				"name": "cantidad_despachada",
+				"type": "String"
+			},
+			{
+				"name": "centro_destino",
+				"type": "String"
+			},
+			{
+				"name": "estado",
+				"type": "String"
+			},
+			{
+				"name": "responsable",
+				"type": "String"
+			},
+			{
+				"name": "nro_guia_despacho",
+				"type": "String"
+			},
+			{
+				"name": "fecha_llegada",
+				"type": "String"
+			}
+		]
+	}
+}

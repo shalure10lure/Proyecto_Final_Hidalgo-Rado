@@ -1,0 +1,81 @@
+{
+	"name": "df_silver_sedem_productos",
+	"properties": {
+		"folder": {
+			"name": "silver/sedem"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_bronze_dw_sedem_productos",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_silver_sedem_productos",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          producto_id as string,",
+				"          empresa_id as string,",
+				"          nombre as string,",
+				"          categoria as string,",
+				"          presentacion as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\n    TRIM(CAST(producto_id AS NVARCHAR)) AS producto_id,\\n    TRIM(CAST(empresa_id AS NVARCHAR))  AS empresa_id,\\n    TRIM(nombre)                        AS nombre,\\n    TRIM(categoria)                     AS categoria,\\n    TRIM(presentacion)                  AS presentacion,\\n    TRIM(estado)                        AS estado\\nFROM bronze.sedem_productos',",
+				"     format: 'query') ~> source1",
+				"source1 derive(producto_id = coalesce(toInteger(regexReplace(trim(producto_id), '[^0-9]', '')), -1),",
+				"          empresa_id = coalesce(toInteger(regexReplace(trim(empresa_id), '[^0-9]', '')), -1),",
+				"          nombre = iif(isNull(nombre) || trim(nombre) == '' || upper(trim(nombre)) == 'NULL', 'Sin Nombre Producto', initCap(trim(replace(replace(nombre, 'NutribebÃ©', 'Nutribebe'), 'AzÃºcar', 'Azucar')))),",
+				"          categoria = iif(isNull(categoria) || trim(categoria) == '' || upper(trim(categoria)) == 'NULL', toString(null()), initCap(trim(categoria))),",
+				"          presentacion = iif(isNull(presentacion) || trim(presentacion) == '' || upper(trim(presentacion)) == 'NULL', toString(null()), initCap(trim(presentacion))),",
+				"          estado = case(     upper(trim(estado)) == 'ACTIVO' || upper(trim(estado)) == 'ACTIVA' || upper(trim(estado)) == 'A', 'Activo',     upper(trim(estado)) == 'INACTIVO' || upper(trim(estado)) == 'INACTIVA' || upper(trim(estado)) == 'I', 'Inactivo',     isNull(estado) || trim(estado) == '', toString(null()),     initCap(trim(estado)) )) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          producto_id as integer,",
+				"          empresa_id as integer,",
+				"          nombre as string,",
+				"          categoria as string,",
+				"          presentacion as string,",
+				"          estado as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          producto_id,",
+				"          empresa_id,",
+				"          nombre,",
+				"          categoria,",
+				"          presentacion,",
+				"          estado",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

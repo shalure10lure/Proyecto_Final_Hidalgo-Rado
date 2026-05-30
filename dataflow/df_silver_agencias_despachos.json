@@ -1,0 +1,100 @@
+{
+	"name": "df_silver_agencias_despachos",
+	"properties": {
+		"folder": {
+			"name": "silver/agenciasedem"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_bronze_dw_agenciasedem_despachos",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_silver_agenciasedem_despachos",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "derivedColumn2"
+				},
+				{
+					"name": "derivedColumn3"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          despacho_id as string,",
+				"          recepcion_id as string,",
+				"          nro_lote as string,",
+				"          almacen_id as string,",
+				"          transportista_id as string,",
+				"          vehiculo_id as string,",
+				"          fecha_despacho as string,",
+				"          cantidad_despachada as string,",
+				"          centro_destino as string,",
+				"          estado as string,",
+				"          responsable as string,",
+				"          nro_guia_despacho as string,",
+				"          fecha_llegada as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\n    TRIM(CAST(despacho_id AS NVARCHAR))         AS despacho_id,\\n    TRIM(CAST(recepcion_id AS NVARCHAR))        AS recepcion_id,\\n    TRIM(nro_lote)                              AS nro_lote,\\n    TRIM(CAST(almacen_id AS NVARCHAR))          AS almacen_id,\\n    TRIM(CAST(transportista_id AS NVARCHAR))    AS transportista_id,\\n    TRIM(CAST(vehiculo_id AS NVARCHAR))         AS vehiculo_id,\\n    TRIM(fecha_despacho)                        AS fecha_despacho,\\n    TRIM(CAST(cantidad_despachada AS NVARCHAR)) AS cantidad_despachada,\\n    TRIM(centro_destino)                        AS centro_destino,\\n    TRIM(estado)                                AS estado,\\n    TRIM(responsable)                           AS responsable,\\n    TRIM(nro_guia_despacho)                     AS nro_guia_despacho,\\n    TRIM(fecha_llegada)                         AS fecha_llegada\\nFROM bronze.agenciasedem_despachos',",
+				"     format: 'query') ~> source1",
+				"source1 derive(despacho_id = iif(isNull(despacho_id) || trim(replace(despacho_id, '\"', '')) == '' || isError(toInteger(trim(replace(despacho_id, '\"', '')))), -1, toInteger(trim(replace(despacho_id, '\"', '')))),",
+				"          recepcion_id = iif(isNull(recepcion_id) || trim(replace(recepcion_id, '\"', '')) == '' || isError(toInteger(trim(replace(recepcion_id, '\"', '')))), -1, toInteger(trim(replace(recepcion_id, '\"', '')))),",
+				"          almacen_id = iif(isNull(almacen_id) || trim(replace(almacen_id, '\"', '')) == '' || isError(toInteger(trim(replace(almacen_id, '\"', '')))), -1, toInteger(trim(replace(almacen_id, '\"', '')))),",
+				"          transportista_id = iif(isNull(transportista_id) || trim(replace(transportista_id, '\"', '')) == '' || isError(toInteger(trim(replace(transportista_id, '\"', '')))), -1, toInteger(trim(replace(transportista_id, '\"', '')))),",
+				"          vehiculo_id = iif(isNull(vehiculo_id) || trim(replace(vehiculo_id, '\"', '')) == '' || isError(toInteger(trim(replace(vehiculo_id, '\"', '')))), -1, toInteger(trim(replace(vehiculo_id, '\"', ''))))) ~> derivedColumn1",
+				"derivedColumn1 derive(nro_lote = iif(isNull(nro_lote) || trim(replace(nro_lote, '\"', '')) == '' || upper(trim(replace(nro_lote, '\"', ''))) == 'NULL', 'Sin Lote', upper(trim(replace(nro_lote, '\"', '')))),",
+				"          cantidad_despachada = iif(isNull(cantidad_despachada) || trim(replace(cantidad_despachada, '\"', '')) == '' || isError(toInteger(trim(replace(cantidad_despachada, '\"', '')))), 0, toInteger(trim(replace(cantidad_despachada, '\"', '')))),",
+				"          fecha_despacho = iif(isNull(fecha_despacho) || trim(replace(fecha_despacho, '\"', '')) == '' || upper(trim(replace(fecha_despacho, '\"', ''))) == 'NULL', toDate('1900-01-01'), coalesce(toDate(trim(replace(fecha_despacho, '\"', '')), 'yyyy-MM-dd'), toDate(trim(replace(fecha_despacho, '\"', '')), 'dd/MM/yyyy'), toDate(trim(replace(fecha_despacho, '\"', '')), 'MM/dd/yyyy'), toDate(trim(replace(fecha_despacho, '\"', '')), 'dd-MM-yyyy'), toDate(trim(replace(fecha_despacho, '\"', '')), 'yyyyMMdd'))),",
+				"          fecha_llegada = ERROR_FUNCTION('iif(isNull(fecha_llegada) || trim(replace(fecha_llegada, __SINGLE_QUOTE__\"__SINGLE_QUOTE__, __SINGLE_QUOTE____SINGLE_QUOTE__)) == __SINGLE_QUOTE____SINGLE_QUOTE__ || upper(trim(replace(fecha_llegada, __SINGLE_QUOTE__\"__SINGLE_QUOTE__, __SINGLE_QUOTE____SINGLE_QUOTE__))) == __SINGLE_QUOTE__NULL__SINGLE_QUOTE__, toDate(__SINGLE_QUOTE__1900-01-01__SINGLE_QUOTE__), coalesce(toDate(trim(replace(fecha_llegada, __SINGLE_QUOTE__\"__SINGLE_QUOTE__, __SINGLE_QUOTE____SINGLE_QUOTE__)), __SINGLE_QUOTE__yyyy-MM-dd__SINGLE_QUOTE__), toDate(trim(replace(fecha_llegada, __SINGLE_QUOTE__\"__SINGLE_QUOTE__, __SINGLE_QUOTE____SINGLE_QUOTE__)), __SINGLE_QUOTE__dd/MM/yyyy__SINGLE_QUOTE__), toDate(trim(fecha_llegada, __SINGLE_QUOTE__\"__SINGLE_QUOTE__, __SINGLE_QUOTE____SINGLE_QUOTE__)), __SINGLE_QUOTE__MM/dd/yyyy__SINGLE_QUOTE__), toDate(trim(replace(fecha_llegada, __SINGLE_QUOTE__\"__SINGLE_QUOTE__, __SINGLE_QUOTE____SINGLE_QUOTE__)), __SINGLE_QUOTE__dd-MM-yyyy__SINGLE_QUOTE__), toDate(trim(replace(fecha_llegada, __SINGLE_QUOTE__\"__SINGLE_QUOTE__, __SINGLE_QUOTE____SINGLE_QUOTE__)), __SINGLE_QUOTE__yyyyMMdd__SINGLE_QUOTE__)))')) ~> derivedColumn2",
+				"derivedColumn2 derive(centro_destino = iif(isNull(centro_destino) || trim(replace(centro_destino, '\"', '')) == '', toString(null()), initCap(trim(replace(centro_destino, '\"', '')))),",
+				"          responsable = iif(isNull(responsable) || trim(replace(responsable, '\"', '')) == '', toString(null()), initCap(trim(replace(responsable, '\"', '')))),",
+				"          nro_guia_despacho = iif(isNull(nro_guia_despacho) || trim(replace(nro_guia_despacho, '\"', '')) == '' || upper(trim(replace(nro_guia_despacho, '\"', ''))) == 'NULL', toString(null()), trim(replace(nro_guia_despacho, '\"', ''))),",
+				"          estado = case(     upper(trim(replace(estado, '\"', ''))) == 'DESPACHADO' || upper(trim(replace(estado, '\"', ''))) == 'D', 'DESPACHADO',     upper(trim(replace(estado, '\"', ''))) == 'DEVUELTO' || upper(trim(replace(estado, '\"', ''))) == 'R', 'DEVUELTO',     upper(trim(replace(estado, '\"', ''))) == 'EN TRANSITO' || upper(trim(replace(estado, '\"', ''))) == 'EN_TRANSITO' || upper(trim(replace(estado, '\"', ''))) == 'T', 'EN_TRANSITO',     isNull(estado) || trim(replace(estado, '\"', '')) == '', toString(null()),     upper(trim(replace(estado, '\"', ''))) )) ~> derivedColumn3",
+				"derivedColumn3 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          despacho_id as integer,",
+				"          recepcion_id as integer,",
+				"          nro_lote as string,",
+				"          almacen_id as integer,",
+				"          transportista_id as integer,",
+				"          vehiculo_id as integer,",
+				"          fecha_despacho as date,",
+				"          cantidad_despachada as integer,",
+				"          centro_destino as string,",
+				"          estado as string,",
+				"          responsable as string,",
+				"          nro_guia_despacho as string,",
+				"          fecha_llegada as date",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+			]
+		}
+	}
+}

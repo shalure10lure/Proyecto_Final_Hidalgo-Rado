@@ -1,0 +1,92 @@
+{
+	"name": "df_silver_sedem_empresas",
+	"properties": {
+		"folder": {
+			"name": "silver/sedem"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_bronze_dw_sedem_empresas",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_silver_sedem_empresas",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "derivedColumn2"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          empresa_id as string,",
+				"          sigla as string,",
+				"          nombre as string,",
+				"          descripcion as string,",
+				"          nit as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\n    TRIM(CAST(empresa_id AS NVARCHAR)) AS empresa_id,\\n    TRIM(sigla)                        AS sigla,\\n    TRIM(nombre)                       AS nombre,\\n    TRIM(descripcion)                  AS descripcion,\\n    TRIM(nit)                          AS nit,\\n    TRIM(municipio)                    AS municipio,\\n    TRIM(departamento)                 AS departamento,\\n    TRIM(estado)                       AS estado\\nFROM bronze.sedem_empresas',",
+				"     format: 'query') ~> source1",
+				"source1 derive(empresa_id = iif(isNull(empresa_id) || trim(empresa_id) == '' || isError(toInteger(trim(empresa_id))), -1, toInteger(trim(empresa_id))),",
+				"          sigla = iif(isNull(sigla) || trim(sigla) == '' || upper(trim(sigla)) == 'NULL', 'SIN SIGLA', upper(trim(sigla))),",
+				"          nombre = iif(isNull(nombre) || trim(nombre) == '' || upper(trim(nombre)) == 'NULL', 'Sin Nombre Empresa', initCap(trim(nombre))),",
+				"          descripcion = iif(isNull(descripcion) || trim(descripcion) == '' || upper(trim(descripcion)) == 'NULL', toString(null()), initCap(trim(descripcion)))) ~> derivedColumn1",
+				"derivedColumn1 derive(nit = iif(isNull(nit) || trim(nit) == '' || upper(trim(nit)) == 'NULL' || upper(trim(nit)) == 'N/D', toString(null()), trim(nit)),",
+				"          municipio = iif(isNull(municipio) || trim(municipio) == '' || upper(trim(municipio)) == 'NULL', toString(null()), initCap(trim(municipio))),",
+				"          departamento = iif(isNull(departamento) || trim(departamento) == '' || upper(trim(departamento)) == 'NULL', toString(null()), initCap(trim(departamento))),",
+				"          estado = case(     upper(trim(estado)) == 'ACTIVA' || upper(trim(estado)) == 'ACTIVO' || upper(trim(estado)) == 'A', 'Activa',     upper(trim(estado)) == 'INACTIVA' || upper(trim(estado)) == 'INACTIVO' || upper(trim(estado)) == 'I', 'Inactiva',     isNull(estado) || trim(estado) == '', toString(null()),     initCap(trim(estado)) )) ~> derivedColumn2",
+				"derivedColumn2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          empresa_id as integer,",
+				"          sigla as string,",
+				"          nombre as string,",
+				"          descripcion as string,",
+				"          nit as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          estado as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          empresa_id,",
+				"          sigla,",
+				"          nombre,",
+				"          descripcion,",
+				"          nit,",
+				"          municipio,",
+				"          departamento,",
+				"          estado",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}
